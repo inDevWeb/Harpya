@@ -13,7 +13,8 @@ Caso queira usar os métodos Back de HCoreApplication e da HWindow
 
 index.php  //Adicionar esta linha no código próximo a linha 23
 
-```
+``` .php
+
     HCoreApplication::setHistory($_REQUEST);
 
 
