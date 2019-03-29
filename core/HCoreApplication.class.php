@@ -34,7 +34,8 @@ class HCoreApplication
         unset($PARAM['method']);
         $referer = array('class'=>$REFERER_CLASS,'method'=>$REFERER_METHOD,'param'=>$PARAM);
         ((isset($_SESSION[APPLICATION_NAME]['referers'])))?($referers = $_SESSION[APPLICATION_NAME]['referers']):($referers=array());
-        if(!empty($REFERER_CLASS))
+        //Ignorar classes do tipo TWindow considerar apenas TPAGE parametrizar isso depois caso necessário
+        if(!empty($REFERER_CLASS) or (!strstr(get_parent_class($REFERER_CLASS), 'TWindow')))
         {
             if(empty(array_search($REFERER_CLASS, $SYSTEM_PROGRAMS)))
             {

@@ -6,7 +6,9 @@
  * @package    widget
  * @subpackage datagrid
  * @author     Pablo Dall'Oglio
+ * @author     Rodrigo Moglia
  * @copyright  Copyright (c) 2006 Adianti Solutions Ltd. (http://www.adianti.com.br)
+ * @copyright  Copyright (c) 2018 Interatia Sistemas de Informação. (http://www.interatia.com)
  * @license    http://www.adianti.com.br/framework-license
  */
 class HPageNavigation
@@ -21,11 +23,9 @@ class HPageNavigation
     private $direction;
     private $hidden;
     private $name;
-    //public static $counter = 0;
     
     public function __construct($name = '')
     {
-        //self::$counter++;
         $this->hidden = false;
         (!empty($name))?($this->name = $name.'_'):($this->name='');
     }
@@ -195,62 +195,106 @@ class HPageNavigation
         $last_page = min($pages, $max);
         
         $nav = new TElement('nav');
-        $nav->{'class'} = 'tpagenavigation';
         $nav-> align = 'center';
         
         $ul = new TElement('ul');
         $ul->{'class'} = 'pagination';
+          
         $nav->add($ul);
+        
+        // First
+        $parameters = $this->action->getParameters();
+        $parameters[$this->name.'offset']=0;
+        $parameters[$this->name.'limit']=$page_size;
+        $parameters[$this->name.'direction']=$this->direction;
+        $parameters[$this->name.'page']=1;
+        $parameters[$this->name.'first_page']=1;
+        $parameters[$this->name.'order']=$this->order;
+        (!empty($this->name))?($parameters = array_merge($_GET,$parameters)) : NULL;
+        $this->action->setParameters($parameters);
+        
+        $item = new TElement('li');
+        $item->{'class'} = 'page-item';
+        $link = new TElement('a');
+        $link->{'class'} = 'page-link glyphicon glyphicon-fast-backward';
+        $link->{'alt'} = 'First';
+        $link->{'aria-label'} = '';
+        //$link->{'popover'} = 'true';
+        //$link->{'popcontent'} = "<b>$registros</b> registros em <b>$pages</b> páginas<br><b>$page_size</b> registros por página<br>";
+        $link-> href      = $this->action->serialize();
+        $link-> generator = 'adianti';
+        
+        $ul->add($item);
+        $item->add($link);
         
         // previous
         $item = new TElement('li');
+        $item->{'class'} = 'page-item';
         $link = new TElement('a');
-        $span = new TElement('span');
+        $link->{'class'} = 'page-link glyphicon glyphicon-step-backward';
         $link->{'href'} = '#';
-        $link->{'aria-label'} = 'Previous';
+        $link->{'alt'} = 'Previous';
+        $link->{'aria-label'} = '';
+        
         $ul->add($item);
         $item->add($link);
-        $link->add($span);
+  
         
         if ($first_page > 1)
         {
-            $this->action->setParameter($this->name.'offset', ($first_page - $max -1) * $page_size);
-            $this->action->setParameter($this->name.'limit',  $page_size);
-            $this->action->setParameter($this->name.'direction', $this->direction);
-            $this->action->setParameter($this->name.'page',   $first_page - $max);
-            $this->action->setParameter($this->name.'first_page', $first_page - $max);
-            $this->action->setParameter($this->name.'order', $this->order);
+            $parameters = $this->action->getParameters();
+            $parameters[$this->name.'offset']=($first_page - $max -1) * $page_size;
+            $parameters[$this->name.'limit']=$page_size;
+            $parameters[$this->name.'direction']=$this->direction;
+            $parameters[$this->name.'page']=$first_page - $max;
+            $parameters[$this->name.'first_page']=$first_page - $max;
+            $parameters[$this->name.'order']=$this->order;
+            
+            (!empty($this->name))?($parameters = array_merge($_GET,$parameters)) : NULL;
+            
+            $this->action->setParameters($parameters);
+            
+            //$link->{'popover'} = 'true';
+            //$link->{'popcontent'} = "<b>$registros</b> registros em <b>$pages</b> páginas<br><b>$page_size</b> registros por página<br>";
             
             $link-> href      = $this->action->serialize();
             $link-> generator = 'adianti';
-            $span->add('&laquo;');
+            $link->add('');
         }
         else
         {
-            $span->add('&nbsp;');
+            $item->{'class'} = 'page-item disabled';
+            $link->add(''); //Previous
+            $link->{'tabindex'} = '-1';
         }
         
         for ($n = $first_page; $n <= $last_page + $first_page -1; $n++)
         {
             $offset = ($n -1) * $page_size;
             $item = new TElement('li');
+            $item->{'class'} = 'page-item';
             $link = new TElement('a');
-            $span = new TElement('span');
+
+           
+            $parameters = $this->action->getParameters();
+            $parameters[$this->name.'offset']=$offset;
+            $parameters[$this->name.'limit']=$page_size;
+            $parameters[$this->name.'direction']=$this->direction;
+            $parameters[$this->name.'page']=$n;
+            $parameters[$this->name.'first_page']=$first_page;
+            $parameters[$this->name.'order']=$this->order;
             
-            $this->action->setParameter($this->name.'offset', $offset);
-            $this->action->setParameter($this->name.'limit',  $page_size);
-            $this->action->setParameter($this->name.'direction', $this->direction);
-            $this->action->setParameter($this->name.'page',   $n);
-            $this->action->setParameter($this->name.'first_page', $first_page);
-            $this->action->setParameter($this->name.'order', $this->order);
+            (!empty($this->name))?($parameters = array_merge($_GET,$parameters)) : NULL;
+            
+            $this->action->setParameters($parameters);
             
             $link-> href      = $this->action->serialize();
             $link-> generator = 'adianti';
             
             $ul->add($item);
             $item->add($link);
-            $link->add($span);
-            $span->add($n);
+            $link->add($n);
+ 
             
             if($this->page == $n)
             {
@@ -261,44 +305,113 @@ class HPageNavigation
         for ($z=$n; $z<=10; $z++)
         {
             $item = new TElement('li');
+            $item->{'class'} = 'page-item disabled';
             $link = new TElement('a');
-            $span = new TElement('span');
-            $item->{'class'} = 'off';
+            $link->{'class'} = 'page-link';
+     
             $ul->add($item);
             $item->add($link);
-            $link->add($span);
-            $span->add($z);
+            $link->add($z);
         }
         
         $item = new TElement('li');
+        $item->{'class'} = 'page-item';
         $link = new TElement('a');
-        $span = new TElement('span');
-        $link->{'aria-label'} = "Next";
+        $link->{'class'} = 'page-link glyphicon glyphicon-step-forward';
+        $link->{'aria-label'} = "";
+        $link->{'alt'} = 'Next';
         $ul->add($item);
         $item->add($link);
-        $link->add($span);
         
         if ($pages > $max)
         {
             $offset = ($n -1) * $page_size;
             $first_page = $n;
             
-            $this->action->setParameter($this->name.'offset',  $offset);
-            $this->action->setParameter($this->name.'limit',   $page_size);
-            $this->action->setParameter($this->name.'direction', $this->direction);
-            $this->action->setParameter($this->name.'page',    $n);
-            $this->action->setParameter($this->name.'first_page', $first_page);
-            $this->action->setParameter($this->name.'order', $this->order);
+            $parameters = $this->action->getParameters();
+            $parameters[$this->name.'offset']=$offset;
+            $parameters[$this->name.'limit']=$page_size;
+            $parameters[$this->name.'direction']=$this->direction;
+            $parameters[$this->name.'page']=$n;
+            $parameters[$this->name.'first_page']=$first_page;
+            $parameters[$this->name.'order']=$this->order;
+            
+            (!empty($this->name))?($parameters = array_merge($_GET,$parameters)) : NULL;
+            
+            $this->action->setParameters($parameters);
+            
+            //$link->{'popover'} = 'true';
+            //$link->{'popcontent'} = "<b>$registros</b> registros em <b>$pages</b> páginas<br><b>$page_size</b> registros por página<br>";
+            
+            
             $link-> href      = $this->action->serialize();
             $link-> generator = 'adianti';
             
-            $span->add('&raquo;');
+            $link->add('');
         }
         else
         {
-            $span->add('&nbsp;');
+           $item->{'class'} = 'page-item disabled';
+            $link->add(''); //Next
+            $link->{'tabindex'} = '-1';
         }
         
+        // Last
+        $parameters = $this->action->getParameters();
+        $parameters[$this->name.'offset']=floor($registros / $pages) * $pages;
+        $parameters[$this->name.'limit']=$page_size;
+        $parameters[$this->name.'direction']=$this->direction;
+        $parameters[$this->name.'page']=$pages;
+        $parameters[$this->name.'first_page']=1;
+        $parameters[$this->name.'order']=$this->order;
+        (!empty($this->name))?($parameters = array_merge($_GET,$parameters)) : NULL;
+        $this->action->setParameters($parameters);
+        
+        $item = new TElement('li');
+        $item->{'class'} = 'page-item';
+        $link = new TElement('a');
+        $link->{'class'} = 'page-link glyphicon glyphicon-fast-forward';
+        $link->{'alt'} = 'First';
+        $link->{'aria-label'} = '';
+        //$link->{'popover'} = 'true';
+        //$link->{'popcontent'} = "<b>$registros</b> registros em <b>$pages</b> páginas<br><b>$page_size</b> registros por página<br>";
+        $link-> href      = $this->action->serialize();
+        $link-> generator = 'adianti';
+        
+        $ul->add($item);
+        $item->add($link);
+        
+        $item = new TElement('li');
+        $item->{'class'} = 'page-item';
+        $link = new TElement('a');
+        $link->{'class'} = 'page-link glyphicon glyphicon-exclamation-sign';
+        $link->{'alt'} = 'First';
+        $link->{'aria-label'} = '';
+        $link->{'popover'} = 'true';
+        $link->{'popcontent'} = "<b>$registros</b> registros em <b>$pages</b> páginas<br><b>$page_size</b> registros por página<br>";
+        //$link-> href      = $this->action->serialize();
+        $link-> generator = 'adianti';
+        
+        $ul->add($item);
+        $item->add($link);
+
+        
+        //Hdebug::debug($parameters);
         $nav->show();
+    }
+    
+    public function prepareParameters($param = array())
+    {
+        $return_param = array();
+        foreach ($param as $key => $value)
+        {
+            if(strstr($key, $this->name))
+            {
+                $key2 = str_replace($this->name,'',$key);
+                $return_param[$key]=$value;
+                $return_param[$key2]=$value;    
+            }
+        }
+        return $return_param;
     }
 }

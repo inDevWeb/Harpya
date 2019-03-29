@@ -34,7 +34,7 @@ class HDebug
     public static function box($var,$title='info')
     {
         $retorno = var_export($var, TRUE);
-        echo "<h2>$title</h2><textarea cols='100' rows='50'>$retorno</textarea><br/>";        
+        echo "<h2>$title</h2><textarea cols='100' rows='10'>$retorno</textarea><br/>";        
     }
 }
 ?>

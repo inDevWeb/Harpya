@@ -1,16 +1,6 @@
 <?php
-/**
- * Window Container (HQueryDialog wrapper) with proposed adianti updated methods
- *
- * @version    5.0
- * @package    control
- * @author     Pablo Dall'Oglio
- * @author     Rodrigo Moglia
- * @copyright  Copyright (c) 2006 Adianti Solutions Ltd. (http://www.adianti.com.br)
- * @copyright  Copyright (c) 2018 Interatia Sistemas de Informação. (http://www.interatia.com)
- * @license    http://www.adianti.com.br/framework-license
- */
-class HWindow extends TPage
+
+class HWindow extends HPage
 {
     private $wrapper;
     
@@ -21,7 +11,6 @@ class HWindow extends TPage
         $this->wrapper->setUseOKButton(FALSE);
         $this->wrapper->setTitle('');
         $this->wrapper->setCloseText('Fechar');
-        $this->wrapper->useCloseButton = TRUE;
         $this->wrapper->setSize(1000, 500);
         $this->wrapper->setModal(TRUE);
         $this->wrapper->{'widget'} = 'T'.'Window';
@@ -139,4 +128,6 @@ class HWindow extends TPage
     {
         HJQueryDialog::closeAll();
     }
+    
+
 }

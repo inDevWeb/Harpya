@@ -13,6 +13,7 @@
 final class HRepository
 {
     private $class; // Active Record class to be manipulated
+    private $name;
     private $criteria; // buffered criteria to use with fluent interfaces
     private $setValues;
     private $select_fields;
@@ -21,8 +22,10 @@ final class HRepository
      * Class Constructor
      * @param $class = Active Record class name
      */
-    public function __construct($class)
+    public function __construct($class,$name="")
     {
+        (!empty($name))?($this->name = '_'.$name):($this->name="");
+        
         if (class_exists($class))
         {
             if (is_subclass_of($class, 'TRecord'))
@@ -504,16 +507,41 @@ final class HRepository
     
     /**
      * Return the amount of objects that satisfy a given criteria
+     * @param $expression a attribute name
      * @param $criteria  An TCriteria object, specifiyng the filters
      * @return           An Integer containing the amount of objects that satisfy the criteria
      */
      
-    public function count($expression='*', TCriteria $criteria = NULL)
+    public function count(TCriteria $criteria = NULL,$expression='*')
     {
         unset($this->select_fields);
         $this->select($expression,"count");
         $return = $this->aggregate($criteria);
         return $return["count($expression)"];
+    }
+    
+     /**
+     * Return the amount of objects that satisfy a given criteria once time at database
+     * @param $expression a attribute name
+     * @param $criteria  An TCriteria object, specifiyng the filters
+     * @param $resetProperties Reset TCriteria object
+     * @return An Integer containing the amount of objects that satisfy the criteria
+     */
+    
+    public function countOnce(TCriteria $criteria = NULL,$resetProperties=TRUE,$expression=FALSE)
+    {
+        (!empty($resetProperties))?($criteria->resetProperties()):('');
+        if(isset($_SESSION[APPLICATION_NAME][$this->class.$this->name.'_count']))
+        {
+            $count = $_SESSION[APPLICATION_NAME][$this->class.$this->name.'_count'];    
+        }
+        else
+        {
+            (empty($expression))?($expression = constant($this->class.'::PRIMARYKEY')):('');
+            $count = $this->count($expression, $criteria);
+        }
+        
+        return $count;
     }
     
     /**
